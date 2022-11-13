@@ -1,5 +1,5 @@
 Total: client.exe server.exe
-   echo Make...
+   @echo Make...
 
 socklib.lib: Socklib.obj 
     lib /out:Socklib.lib Socklib.obj

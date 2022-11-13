@@ -15,7 +15,7 @@ using namespace std;
 class Server: public StrSocket
 {
 public:
-    Server(const StrSocket& s):StrSocket(s)
+    Server(StrSocket&& s):StrSocket(move(s))
     {
         soRcvTimeout(60);
         soSndTimeout(60);
@@ -95,8 +95,9 @@ bool quasi(const string& a, const string& b)
     return true;
 }
 
-void ServerWork(Server S)
+void ServerWork(Server&& T)
 {
+    Server S(move(T));
     ifstream in;
     try {
 
@@ -151,8 +152,7 @@ int main(int argc, char*argv[])
             try {
                 auto r = srv.answer(5);
                 cout << "Call from " << Socket::addr(r.peer()) << endl;
-                cout << "Answer socket " << r.sock() << endl;
-                thread T(ServerWork,Server(r));
+                thread T(ServerWork,move(r));
                 T.detach();
             } catch(exception&e)
             {

@@ -13,27 +13,26 @@ public:
     enum : unsigned long { wrongIP = 0xFFFFFFFF, localIP = 0x7F000001 };
     Socket(int domain = AF_INET, int type = SOCK_STREAM, int protocol = 0);
     Socket(SOCKET sockno);         // Get owned!!!
-    Socket(const Socket&so):s(so.s){}
-    Socket& operator = (const Socket&so) { Socket t(so); swap(t); return *this; }
-    virtual ~Socket() {};
+    Socket(const Socket&so)              = delete;
+    Socket& operator = (const Socket&so) = delete;
+    Socket(Socket&&so):s(so.s) { so.s = INVALID_SOCKET; }
+    virtual ~Socket()
+    {
+        shutdown(s,2);
+        soclose(s);
+    }
 
     unsigned long peer() const;
 
     void soRcvTimeout(int seconds) const;
     void soSndTimeout(int seconds) const;
 
-    SOCKET sock() const { return *s; }
-
-
 private:
-    std::shared_ptr<SOCKET> s;
+    SOCKET s;
 
 protected:
-    void swap(Socket&so) { auto t = s; s = so.s; so.s = t; }
+    SOCKET sock() const { return s; }
     int setsockopt(int level, int optname, const char * optval, int optlen) const;
-
-    static void Closer(SOCKET * sock);
-
 
 public:
     // эти функции при ошибке НЕ генерируют исключения
@@ -55,10 +54,10 @@ class StrSocket: public Socket
 {
 public:
     StrSocket(unsigned long ip = 0, unsigned short int port = 0);
-    StrSocket(const StrSocket&s):Socket(s) {}
-    StrSocket(const Socket&s):Socket(s) {}
+    StrSocket(const StrSocket&s) = delete;
+    StrSocket(StrSocket&&s):Socket(std::move(s)){};
     StrSocket(SOCKET s):Socket(s) {}        // Get owned!!
-    StrSocket& operator = (const StrSocket&so) { StrSocket t(so); swap(t); return *this; }
+    StrSocket& operator = (const StrSocket&so) = delete;
 
     int call(unsigned long addr, unsigned short int port) const;
     int call(const std::string& addr, unsigned short int port) const;

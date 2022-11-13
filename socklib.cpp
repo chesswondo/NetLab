@@ -36,25 +36,14 @@ namespace {   // WinSock Initialization
 }
 
 Socket::Socket(int domain, int type, int protocol)
-:s(new SOCKET(socket(domain,type,protocol)),Socket::Closer)
+:s(socket(domain,type,protocol))
 {
     if (sock() == INVALID_SOCKET) throw runtime_error("bad socket creation");
 }
 
 Socket::Socket(SOCKET sockno)
-:s(new SOCKET(sockno),Socket::Closer)
+:s(sockno)
 {}
-
-void Socket::Closer(SOCKET * sock)
-{
-    shutdown(*sock,2);
-    int rc = soclose(*sock);
-#if DEBUG
-    cout << "Soclose return " << rc << endl;
-#endif
-    delete sock;
-}
-
 
 unsigned long Socket::peer() const
 {
